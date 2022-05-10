@@ -92,3 +92,66 @@ class TestAOMigrationQuantization(AOMigrationTestCase):
             'enable_observer',
         ]
         self._test_function_import('fake_quantize', function_list)
+
+
+class TestAOMIgrationNNQuantized(AOMigrationTestCase):
+    def test_functional_import(self):
+        function_list = [
+            'avg_pool2d',
+            'avg_pool3d',
+            'adaptive_avg_pool2d',
+            'adaptive_avg_pool3d',
+            'conv1d',
+            'conv2d',
+            'conv3d',
+            'interpolate',
+            'linear',
+            'max_pool1d',
+            'max_pool2d',
+            'celu',
+            'leaky_relu',
+            'hardtanh',
+            'hardswish',
+            'threshold',
+            'elu',
+            'hardsigmoid',
+            'clamp',
+            'upsample',
+            'upsample_bilinear',
+            'upsample_nearest',
+        ]
+        self._test_function_import('functional', function_list, base='nn.quantized')
+
+    def test_package_import(self):
+        function_list = [
+            'BatchNorm2d',
+            'BatchNorm3d',
+            # '_ConvNd',
+            'Conv1d',
+            'Conv2d',
+            'Conv3d',
+            'ConvTranspose1d',
+            'ConvTranspose2d',
+            'ConvTranspose3d',
+            'DeQuantize',
+            'ELU',
+            'Embedding',
+            'EmbeddingBag',
+            'GroupNorm',
+            'Hardswish',
+            'InstanceNorm1d',
+            'InstanceNorm2d',
+            'InstanceNorm3d',
+            'LayerNorm',
+            'LeakyReLU',
+            'Linear',
+            'MaxPool2d',
+            'Quantize',
+            'ReLU6',
+            'Sigmoid',
+            'Dropout',
+            'FloatFunctional',
+            'FXFloatFunctional',
+            'QFunctional',
+        ]
+        self._test_function_import('quantized', function_list, base='nn')
