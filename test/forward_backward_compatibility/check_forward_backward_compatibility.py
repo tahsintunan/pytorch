@@ -133,6 +133,7 @@ ALLOW_LIST = [
     ("aten::stft", datetime.date(2022, 5, 23)),
     ("aten::linalg_lu_solve", datetime.date(2022, 5, 23)),
     ("aten::linalg_lu_solve.out", datetime.date(2022, 5, 23)),
+    ("quantized::layer_norm", datetime.date(2022, 6, 1)),
 ]
 
 ALLOW_LIST_COMPILED = [

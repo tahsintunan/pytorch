@@ -1,11 +1,14 @@
+#include <ATen/native/Resize.h>
 #include <ATen/native/layer_norm.h>
 
-#include <ATen/AccumulateType.h>
 #include <ATen/ATen.h>
-#include <ATen/Config.h>
+#include <ATen/AccumulateType.h>
 #include <ATen/CPUApplyUtils.h>
+#include <ATen/Config.h>
 #include <ATen/NativeFunctions.h>
 #include <ATen/Parallel.h>
+#include <c10/core/ScalarType.h>
+#include <c10/core/ScalarTypeToTypeMeta.h>
 #include <c10/util/irange.h>
 #include <torch/library.h>
 
@@ -184,6 +187,74 @@ Tensor layer_norm(
 
 
   return std::get<0>(at::native_layer_norm(input, normalized_shape, weight, bias, eps));
+}
+
+Tensor& layer_norm_out(
+    const Tensor& input,
+    IntArrayRef normalized_shape,
+    const c10::optional<Tensor>& weight_opt /* optional */,
+    const c10::optional<Tensor>& bias_opt /* optional */,
+    double eps,
+    bool /* cudnn_enable, deprecated */,
+    Tensor& output) {
+  c10::MaybeOwned<Tensor> weight_maybe_owned =
+      at::borrow_from_optional_tensor(weight_opt);
+  const Tensor& weight = *weight_maybe_owned;
+  c10::MaybeOwned<Tensor> bias_maybe_owned =
+      at::borrow_from_optional_tensor(bias_opt);
+  const Tensor& bias = *bias_maybe_owned;
+
+  auto M_N = _check_layer_norm_inputs(input, normalized_shape, weight, bias);
+  auto M = M_N.first;
+  auto N = M_N.second;
+  auto X = input.expect_contiguous();
+  auto gamma = weight.expect_contiguous();
+  auto beta = bias.expect_contiguous();
+
+  Tensor mean = at::empty({M}, X->options());
+  Tensor rstd = at::empty({M}, X->options());
+
+  TORCH_CHECK(canCast(
+      typeMetaToScalarType(input.dtype()),
+      typeMetaToScalarType(output.dtype())));
+
+  if (!output.is_contiguous()) {
+    Tensor Y = at::native::empty_like(
+        *X,
+        c10::nullopt /* dtype */,
+        c10::nullopt /* layout */,
+        c10::nullopt /* device */,
+        c10::nullopt /* pin_memory */,
+        at::MemoryFormat::Contiguous);
+    LayerNormKernel(
+        input.device().type(),
+        *X,
+        *gamma,
+        *beta,
+        M,
+        N,
+        eps,
+        &Y,
+        &mean,
+        &rstd);
+    resize_output(output, Y.sizes());
+    output.copy_(std::move(Y));
+  } else {
+    resize_output(output, input.sizes());
+    LayerNormKernel(
+        input.device().type(),
+        *X,
+        *gamma,
+        *beta,
+        M,
+        N,
+        eps,
+        &output,
+        &mean,
+        &rstd);
+  }
+
+  return output;
 }
 
 DEFINE_DISPATCH(LayerNormKernel);
