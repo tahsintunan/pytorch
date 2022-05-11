@@ -311,7 +311,6 @@ meta_exclude_set = {
     torch.linalg.matrix_exp,  # MISSING aten::linalg_matrix_exp
     torch.linalg.matrix_power,  # MISSING aten::_local_scalar_dense
     torch.linalg.matrix_power,  # MISSING aten::eye.m_out
-    torch.linalg.norm,  # MISSING aten::linalg_vector_norm
     torch.linalg.pinv,  # MISSING aten::where.self
     torch.linalg.qr,  # MISSING aten::_linalg_qr_helper
     torch.linalg.slogdet,  # MISSING aten::linalg_slogdet
@@ -319,7 +318,6 @@ meta_exclude_set = {
     torch.linalg.solve_triangular,  # MISSING aten::linalg_solve_triangular
     torch.linalg.tensorinv,  # MISSING aten::_local_scalar_dense
     torch.linalg.tensorsolve,  # MISSING aten::linalg_solve
-    torch.linalg.vector_norm,  # MISSING aten::linalg_vector_norm
     torch.logcumsumexp,  # MISSING aten::_logcumsumexp
     torch.logdet,  # MISSING aten::_local_scalar_dense
     torch.logical_and,  # MISSING aten::logical_and.out
